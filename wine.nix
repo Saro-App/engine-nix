@@ -18,8 +18,13 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
+  preConfigure = ''
+    export CC="clang -target x86_64-darwin-apple"
+    export CXX="clang -target x86_64-darwin-apple"
+  '';
+
   configureFlags = [
-    "--host=x86_64-darwin"
+    "--host=x86_64-darwin" # no idea why this works
     "--build=x86_64-darwin"
     "--enable-archs=i386,x86_64"
     "--enable-win64"
@@ -59,6 +64,31 @@ stdenv.mkDerivation rec {
     "--with-ffmpeg"
   ];
 
-  nativeBuildInputs = with pkgsArm; [bison pkgsCross.mingwW64.buildPackages.gcc pkg-config wget];
-  buildInputs = with pkgsIntel; [freetype gnutls moltenvk SDL2 gst_all_1.gstreamer ffmpeg gettext];
+  nativeBuildInputs = with pkgsArm; [
+    flex
+    bison
+    pkgsCross.mingwW64.buildPackages.gcc
+    pkg-config
+    wget
+  ];
+  buildInputs = with pkgsIntel;
+    [
+      freetype
+      gnutls
+      moltenvk
+      SDL2
+      ffmpeg
+      gettext
+      libpcap
+      libinotify-kqueue
+      ffmpeg
+    ]
+    ++ (with pkgsIntel.gst_all_1; [
+      gstreamer
+      # gst-plugins-base
+      # gst-plugins-good
+      # gst-plugins-ugly
+      # gst-libav
+      # (gst-plugins-bad.override {enableZbar = false;})
+    ]);
 }
