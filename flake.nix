@@ -3,7 +3,7 @@
   description = "Wine build flake for arm64 macOS";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/18dd725c29603f582cf1900e0d25f9f1063dbf11";
+    nixpkgs.url = "github:NixOS/nixpkgs/24.11";
   };
 
   outputs = {

@@ -19,8 +19,8 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   preConfigure = ''
-    export CC="clang -target x86_64-darwin-apple"
-    export CXX="clang -target x86_64-darwin-apple"
+    export CC="clang -target x86_64-apple-darwin"
+    export CXX="clang -target x86_64-apple-darwin"
   '';
 
   configureFlags = [
@@ -35,7 +35,8 @@ stdenv.mkDerivation rec {
     "--with-cups"
     "--without-dbus"
     "--with-freetype"
-    "--with-gettext"
+    # "--with-gettext"
+    "--without-gettext"
     "--without-gettextpo"
     "--without-gphoto"
     "--with-gnutls"
@@ -65,6 +66,7 @@ stdenv.mkDerivation rec {
   ];
 
   nativeBuildInputs = with pkgsArm; [
+    clang
     flex
     bison
     pkgsCross.mingwW64.buildPackages.gcc
@@ -78,14 +80,16 @@ stdenv.mkDerivation rec {
       moltenvk
       SDL2
       ffmpeg
-      gettext
+      # gettext
       libpcap
       libinotify-kqueue
       ffmpeg
+      cups.dev
+      # pkgsCross.mingwW64.gettext
     ]
     ++ (with pkgsIntel.gst_all_1; [
       gstreamer
-      # gst-plugins-base
+      gst-plugins-base
       # gst-plugins-good
       # gst-plugins-ugly
       # gst-libav
