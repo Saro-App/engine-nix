@@ -1,11 +1,11 @@
 # Copyright (C) 2025 Ethan Uppal. All rights reserved.
 {
-  stdenv,
+  stdenvNoCC,
   fetchFromGitHub,
   pkgsArm,
   pkgsIntel,
 }:
-stdenv.mkDerivation rec {
+stdenvNoCC.mkDerivation rec {
   pname = "saro-wine";
   version = "0.0.0";
 
@@ -19,8 +19,8 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   preConfigure = ''
-    export CC="clang -target x86_64-apple-darwin"
-    export CXX="clang -target x86_64-apple-darwin"
+    export CC="arch -x86_64 clang"
+    export CXX="arch -x86_64 clang"
   '';
 
   configureFlags = [
@@ -66,7 +66,6 @@ stdenv.mkDerivation rec {
   ];
 
   nativeBuildInputs = with pkgsArm; [
-    clang
     flex
     bison
     pkgsCross.mingwW64.buildPackages.gcc
@@ -75,6 +74,7 @@ stdenv.mkDerivation rec {
   ];
   buildInputs = with pkgsIntel;
     [
+      clang
       freetype
       gnutls
       moltenvk
