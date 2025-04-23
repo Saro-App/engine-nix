@@ -1,0 +1,17 @@
+name: Build Wine
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_wine:
+    runs-on: macos-15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix build
