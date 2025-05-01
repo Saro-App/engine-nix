@@ -19,8 +19,8 @@ stdenvNoCC.mkDerivation rec {
   enableParallelBuilding = true;
 
   preConfigure = ''
-    export CC="arch -x86_64 clang"
-    export CXX="arch -x86_64 clang"
+    export CC="/usr/bin/arch -x86_64 clang"
+    export CXX="/usr/bin/arch -x86_64 clang"
   '';
 
   configureFlags = [
@@ -35,8 +35,7 @@ stdenvNoCC.mkDerivation rec {
     "--with-cups"
     "--without-dbus"
     "--with-freetype"
-    # "--with-gettext"
-    "--without-gettext"
+    "--with-gettext"
     "--without-gettextpo"
     "--without-gphoto"
     "--with-gnutls"
@@ -65,22 +64,44 @@ stdenvNoCC.mkDerivation rec {
     "--with-ffmpeg"
   ];
 
-  nativeBuildInputs = with pkgsArm; [
-    flex
-    bison
-    pkgsCross.mingwW64.buildPackages.gcc
-    pkg-config
-    wget
-  ];
+  nativeBuildInputs = with pkgsArm;
+    [
+      flex
+      bison
+      pkgsCross.mingw32.buildPackages.gcc
+      pkgsCross.mingwW64.buildPackages.gcc
+      pkg-config
+      wget
+    ]
+    ++ (with pkgsArm.buildPackages.darwin.apple_sdk.frameworks; [
+      CoreServices
+      Foundation
+      ForceFeedback
+      AppKit
+      OpenGL
+      IOKit
+      DiskArbitration
+      Security
+      ApplicationServices
+      AudioToolbox
+      CoreAudio
+      AudioUnit
+      CoreMIDI
+      OpenAL
+      OpenCL
+      Cocoa
+      Carbon
+    ]);
   buildInputs = with pkgsIntel;
     [
       clang
       freetype
       gnutls
+      vulkan-loader
       moltenvk
       SDL2
       ffmpeg
-      # gettext
+      gettext
       libpcap
       libinotify-kqueue
       ffmpeg

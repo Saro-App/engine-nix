@@ -70,3 +70,26 @@ make: *** [Makefile:1793: dlls/activeds/x86_64-windows/activeds.dll] Error 2
 winegcc: /nix/store/lbx5fq4xxnarsnx17h46rapwy9ma6i0w-x86_64-w64-mingw32-gcc-wrapper-13.3.0/bin/x86_64-w64-mingw32-gcc failed
 make: *** [Makefile:2955: dlls/actxprxy/x86_64-windows/actxprxy.dll] Error 2
 ```
+ Gonna try using `gettext` normal.
+In any case, it seems to just not have pkg-config files.
+
+## 4/30
+
+Yeah, the intl lib exists but is not being found and there's no pkg-config files
+
+Ok what:
+```
+air:source ethan$ ls /nix/store/dmnqb6xi4a8axk0s3ncpkza54ldzyd17-gettext-0.21.1/lib
+gettext              libgettextlib-0.21.1.dylib  libgettextpo.dylib          libgettextsrc.la  libtextstyle.0.dylib
+libasprintf.0.dylib  libgettextlib.dylib         libgettextpo.la             libintl.8.dylib   libtextstyle.dylib
+libasprintf.dylib    libgettextlib.la            libgettextsrc-0.21.1.dylib  libintl.dylib     libtextstyle.la
+libasprintf.la       libgettextpo.0.dylib        libgettextsrc.dylib         libintl.la
+air:source ethan$ x86_64-w64-mingw32-gcc -lintl -L/nix/store/dmnqb6xi4a8axk0s3ncpkza54ldzyd17-gettext-0.21.1/lib/
+/nix/store/j3zqnr428hiz7kkwzpcgiwc3446fihig-x86_64-w64-mingw32-binutils-2.43.1/bin/x86_64-w64-mingw32-ld: cannot find -lintl: No such file or directory
+/nix/store/j3zqnr428hiz7kkwzpcgiwc3446fihig-x86_64-w64-mingw32-binutils-2.43.1/bin/x86_64-w64-mingw32-ld: cannot find -lintl: No such file or directory
+collect2: error: ld returned 1 exit status
+```
+
+Anyways learned --ignore-environment isolates the nix build further
+
+https://www.reddit.com/r/NixOS/comments/lqda7w/mingw/
