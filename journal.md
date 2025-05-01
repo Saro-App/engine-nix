@@ -93,3 +93,54 @@ collect2: error: ld returned 1 exit status
 Anyways learned --ignore-environment isolates the nix build further
 
 https://www.reddit.com/r/NixOS/comments/lqda7w/mingw/
+
+## 5/1
+
+- https://lists.macports.org/pipermail/macports-tickets/2010-February/050312.html
+- I don't even remember how I found what the derivation path is
+
+Here's what's confusing:
+
+```
+/nix/store/5bq22dwj6bmrfp04k2avrsdwcxk6cyxk-x86_64-w64-mingw32-gcc-wrapper-14.2.1.20250322/bin/x86_64-w64-mingw32-gcc -L/nix/store/2x4b8w75sd4crsyl4x3rd6ciswflmzw0-gettext-0.22.5/lib -lintl
+```
+
+Produces
+
+```
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: cannot find -lintl: No such file or directory
+collect2: error: ld returned 1 exit status
+```
+
+but swapping that out with `/usr/local/lib` gives a success:
+
+```
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: /nix/store/mzkmz3iiy57fcqim225cgdhf3slhm11k-mingw-w64-x86_64-w64-mingw32-12.0.0/lib/libmingw32.a(lib64_libmingw32_a-crtexewin.o):(.text.startup+0xc5): undefined reference to `WinMain'
+```
+
+But the `libintl.dylib`s in both, when inspected with `file -L`, both show:
+
+```
+Mach-O 64-bit x86_64 dynamically linked shared library, flags:<NOUNDEFS|DYLDLINK|TWOLEVEL|NO_REEXPORTED_DYLIBS>
+```
+
+Curiously, whatever you put for `-l` it complains about `libintl`:
+
+```
+$ /nix/store/5bq22dwj6bmrfp04k2avrsdwcxk6cyxk-x86_64-w64-mingw32-gcc-wrapper-14.2.1.20250322/bin/x86_64-w64-mingw32-gcc -lWHATEVER
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: cannot find -lWHATEVER: No such file or directory
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.dll.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.dll.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.dll.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.dll.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: skipping incompatible /nix/store/qbbvfndzjx58i4wjffnbkgc07dkpbymc-mcfgthread-i686-w64-mingw32-1.9.2/lib/libmcfgthread.a when searching for -lmcfgthread
+/nix/store/3z2pf8l33d0aqiyl836lgmpaxy8gr97h-x86_64-w64-mingw32-binutils-2.44/bin/x86_64-w64-mingw32-ld: cannot find -lintl: No such file or directory
+collect2: error: ld returned 1 exit status
+```
